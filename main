@@ -1,9 +1,11 @@
 using namespace std;
-#include <iostream>
-#include <list>
-
+#include <list>;
+#include <iostream>;
+#include "Menu.h";
+#include "Term.h";
 int main
 {
+
 
 
 
