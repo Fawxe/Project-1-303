@@ -1,5 +1,8 @@
-int main
+using namespace std;
+#include <iostream>
+#include <list>
 
+int main
 {
 
 
