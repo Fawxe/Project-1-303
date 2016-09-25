@@ -7,6 +7,37 @@ using namespace std;
 
 
 
+list<Term>Order_Poly(list<Term>& polynomial) //orders the polynomial from greatest to smallest exponent
+{
+	if (polynomial.size() == 0||polynomial.size()==1)
+		return polynomial;
+	list<Term>::iterator itr = polynomial.begin();
+
+	list<Term>::iterator next_itr=polynomial.begin();
+	next_itr++;
+	Term temp;
+
+	for (itr; itr!=polynomial.end(); itr++) 
+	{
+		for (next_itr; next_itr != polynomial.end(); next_itr++)
+		{
+			if (*itr == *next_itr)
+			{
+				*itr = *itr + *next_itr;
+				polynomial.remove(*next_itr);
+			}
+			 if (*itr < *next_itr )
+			{
+				temp = *itr;
+				*itr = *next_itr;
+				*next_itr = temp;
+			}
+			
+		}
+	}
+
+	return polynomial;
+}
 
 
 void Convert_Input(string input, list<Term>& polynomial)
@@ -98,11 +129,9 @@ int main()
 	string input;
 	list<Term> polynomial;
 	list<Term> new_polynomial;
-
 	while (!done)
 	{
 		string choice = Get_Choice();
-		
 		if (choice == "1")
 		{
 			Clear_list(polynomial);
@@ -110,14 +139,17 @@ int main()
 
 			Convert_Input(input, polynomial);
 		}
+
+
 		else if (choice == "2"&&polynomial.size() > 0) {
 			input = Get_Input();
 
 			Convert_Input(input, new_polynomial);
 			
 			list<Term>::iterator new_itr = new_polynomial.begin();
-			int count = 0;
-			for (list<Term>::iterator original_itr = polynomial.begin(); original_itr != polynomial.end(); original_itr++)
+			list<Term>::iterator original_itr = polynomial.begin();
+			
+			for (original_itr; original_itr != polynomial.end(); original_itr++)
 			{
 				for (new_itr; new_itr != new_polynomial.end(); new_itr++)
 				{
@@ -128,12 +160,10 @@ int main()
 					else if (*original_itr < *new_itr)
 					{
 						new_polynomial.insert(new_itr, *original_itr);
+						
 					}
 					else if (new_itr == new_polynomial.end())
 						new_polynomial.push_back(*original_itr);
-					count++;
-					if (count == polynomial.size())
-						break;
 				}
 			}
 			Clear_list(polynomial);
@@ -143,7 +173,8 @@ int main()
 			Clear_list(new_polynomial);
 		}
 
-		else if (choice == "3")
+
+		if (choice == "3")
 		{
 			if (polynomial.size() != 0)
 				Display_polynomial(polynomial);
@@ -153,8 +184,9 @@ int main()
 		else if (choice == "4")
 		{
 			done = true;
-			break;
 		}
+		
+		Order_Poly(polynomial);
 		
 		Display_polynomial(polynomial);
 	}
