@@ -16,23 +16,27 @@ list<Term>Order_Poly(list<Term>& polynomial) //orders the polynomial from greate
 	list<Term>::iterator next_itr=polynomial.begin();
 	next_itr++;
 	Term temp;
-
-	for (itr; itr!=polynomial.end(); itr++) 
+	int item_num = polynomial.size();
+	for (itr; itr!=polynomial.end(); ++itr) 
 	{
-		for (next_itr; next_itr != polynomial.end(); next_itr++)
+		for (next_itr; next_itr != polynomial.end(); ++next_itr)
 		{
-			if (*itr == *next_itr)
+			if (polynomial.size() > 1)
 			{
-				*itr = *itr + *next_itr;
-				polynomial.remove(*next_itr);
+				if (*itr == *next_itr)
+				{
+					*itr = *itr + *next_itr;
+					polynomial.erase(next_itr);
+				}
+				else if (*itr < *next_itr)
+				{
+					temp = *itr;
+					*itr = *next_itr;
+					*next_itr = temp;
+				}
 			}
-			 if (*itr < *next_itr )
-			{
-				temp = *itr;
-				*itr = *next_itr;
-				*next_itr = temp;
-			}
-			
+			else
+				break;
 		}
 	}
 
@@ -138,6 +142,8 @@ int main()
 			input = Get_Input();
 
 			Convert_Input(input, polynomial);
+
+
 		}
 
 
@@ -157,15 +163,15 @@ int main()
 					{
 						*new_itr = *original_itr + *new_itr;
 					}
-					else if (*original_itr < *new_itr)
+					else
 					{
 						new_polynomial.insert(new_itr, *original_itr);
-						
+
 					}
-					else if (new_itr == new_polynomial.end())
-						new_polynomial.push_back(*original_itr);
 				}
 			}
+				
+
 			Clear_list(polynomial);
 			new_itr = new_polynomial.begin();
 			for (new_itr; new_itr != new_polynomial.end(); new_itr++)
@@ -184,6 +190,7 @@ int main()
 		else if (choice == "4")
 		{
 			done = true;
+			break;
 		}
 		
 		Order_Poly(polynomial);
