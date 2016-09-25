@@ -1,3 +1,14 @@
+using namespace std;
+#include <iostream>;
+#include <string>;
+#include "Menu.h";
+#include "Term.h";
+#include "list.h";
+
+
+
+
+
 void Convert_Input(string input, list<Term>& polynomial)
 {
 	int temp = 1;
@@ -70,61 +81,78 @@ void Convert_Input(string input, list<Term>& polynomial)
 	polynomial.push_back(new_term);
 }
 
-list<Term> Display_list(list<Term> polynomial)
+
+
+list<Term>Clear_list(list<Term>& polynomial) //intended to clear first list upon user choice
 {
-	list<Term> ordered_poly;
-		list<Term>::iterator itr = polynomial.end();
-		for (itr; itr != polynomial.begin(); itr--)
-			ordered_poly.push_back(*itr);
-		return ordered_poly;
+	if (polynomial.size() == 0)
+		return polynomial;
+	while(polynomial.size()>0)
+		polynomial.pop_back();
+	return polynomial;
 }
 
 int main()
 {
+	bool done = false;
+	string input;
 	list<Term> polynomial;
 	list<Term> new_polynomial;
 
-	string input;
-
-	cin >> input;
-
-	Convert_Input(input, polynomial);
-	bool done = true;
 	while (!done)
 	{
-		cout << "Second Polynomial?  (0 to exit)";
-		cin >> input;
-		if (input == "0")
-			break;
+		string choice = Get_Choice();
 		
-		Convert_Input(input, new_polynomial);
-		list<Term>::iterator original_itr = polynomial.begin();
-		list<Term>::iterator new_itr = new_polynomial.begin();
-		
-		for (original_itr; original_itr != polynomial.end(); original_itr++)
+		if (choice == "1")
 		{
-			for (new_itr; new_itr != new_polynomial.end(); new_itr++)
+			Clear_list(polynomial);
+			input = Get_Input();
+
+			Convert_Input(input, polynomial);
+		}
+		else if (choice == "2"&&polynomial.size() > 0) {
+			input = Get_Input();
+
+			Convert_Input(input, new_polynomial);
+			list<Term>::iterator original_itr = polynomial.begin();
+			list<Term>::iterator new_itr = new_polynomial.begin();
+
+			for (original_itr; original_itr != polynomial.end(); original_itr++)
 			{
-				if (*original_itr == *new_itr)
+				for (new_itr; new_itr != new_polynomial.end(); new_itr++)
 				{
-					*new_itr = *original_itr + *new_itr;
+					if (*original_itr == *new_itr)
+					{
+						*new_itr = *original_itr + *new_itr;
+					}
+					else if (*original_itr < *new_itr)
+					{
+						new_polynomial.insert(new_itr, *original_itr);
+					}
+					else if (new_itr == new_polynomial.end())
+						new_polynomial.push_back(*original_itr);
 				}
-				else if (*original_itr < *new_itr)
-				{
-					new_polynomial.insert(new_itr, *original_itr);
-				}
-				else if (new_itr == new_polynomial.end())
-					new_polynomial.push_back(*original_itr);
 			}
+			Clear_list(polynomial);
+			new_itr = new_polynomial.begin();
+			for (new_itr; new_itr != new_polynomial.end(); new_itr++)
+				polynomial.push_back(*new_itr);
+			Clear_list(new_polynomial);
+		}
+
+		else if (choice == "3")
+		{
+			if (polynomial.size() != 0)
+				Display_polynomial(polynomial);
+			else
+				cout << "There is no polynomial to display." << endl;
+		}
+		else if (choice == "4")
+		{
+			done = true;
+			break;
 		}
 		
-		polynomial = new_polynomial;
-		new_itr = new_polynomial.begin();
-		new_polynomial.erase(new_itr);
-
+		Display_polynomial(polynomial);
 	}
-
-	system("pause");
-
-	
 }
