@@ -114,10 +114,10 @@ int main()
 			input = Get_Input();
 
 			Convert_Input(input, new_polynomial);
-			list<Term>::iterator original_itr = polynomial.begin();
+			
 			list<Term>::iterator new_itr = new_polynomial.begin();
-
-			for (original_itr; original_itr != polynomial.end(); original_itr++)
+			int count = 0;
+			for (list<Term>::iterator original_itr = polynomial.begin(); original_itr != polynomial.end(); original_itr++)
 			{
 				for (new_itr; new_itr != new_polynomial.end(); new_itr++)
 				{
@@ -131,6 +131,9 @@ int main()
 					}
 					else if (new_itr == new_polynomial.end())
 						new_polynomial.push_back(*original_itr);
+					count++;
+					if (count == polynomial.size())
+						break;
 				}
 			}
 			Clear_list(polynomial);
