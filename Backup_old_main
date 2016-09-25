@@ -1,0 +1,206 @@
+using namespace std;
+#include <iostream>;
+#include <string>;
+#include "Menu.h";
+#include "Term.h";
+#include "list.h";
+
+
+
+list<Term>Order_Poly(list<Term>& polynomial) //orders the polynomial from greatest to smallest exponent
+{
+	if (polynomial.size() == 0||polynomial.size()==1)
+		return polynomial;
+	list<Term>::iterator itr = polynomial.begin();
+
+	list<Term>::iterator next_itr=polynomial.begin();
+	next_itr++;
+	Term temp;
+	int swapcount = 0;
+	for (itr; itr!=polynomial.end(); ++itr) 
+	{
+		for (next_itr; next_itr != polynomial.end(); ++next_itr)
+		{
+			if (polynomial.size() > 1)
+			{
+				if (*itr == *next_itr)
+				{
+					*itr = *itr + *next_itr;
+					polynomial.erase(next_itr);
+					next_itr = itr;
+				}
+				else if (*itr < *next_itr)
+				{
+					temp = *itr;
+					*itr = *next_itr;
+					*next_itr = temp;
+					
+				}
+			}
+			else if (polynomial.size()<=1)
+				break;
+		}
+		if (swapcount > 0)
+			itr = polynomial.begin();
+	}
+
+	return polynomial;
+}
+
+
+void Convert_Input(string input, list<Term>& polynomial)
+{
+	int temp = 1;
+	bool co_eff = true;
+	bool has_x = false;
+	Term new_term;
+	bool is_negative = false;
+	for (int i = 0; i <= input.size() - 1; i++)
+	{
+
+		if (input[i] == '+' || input[i] == '-')
+		{
+
+			if (is_negative)
+			{
+				int sign_change = new_term.get_coefficient();
+				sign_change = sign_change*-1;
+				new_term.set_coefficient(sign_change);
+				is_negative = false;
+			}
+			if (input[i] == '-')
+				is_negative = true;
+			int term_test = new_term.get_coefficient();
+			if (term_test != 0)
+			{
+				polynomial.push_back(new_term);
+			}
+			temp = 1;
+			co_eff = true;
+			has_x = false;
+			new_term.set_coefficient(1);
+			new_term.set_exponent(0);
+
+		}
+
+		else if (input[i] == 'x' || input[i] == 'X')
+		{
+			temp = 0;
+			co_eff = false;
+			has_x = true;
+			new_term.set_exponent(1);
+			if (new_term.get_coefficient() == 0)
+				new_term.set_coefficient(1);
+		}
+
+		else if (co_eff == true)
+		{
+			if (temp != 1)
+				temp = temp * 10 + input[i] - 48;
+			else
+				temp = input[i] - 48;
+			new_term.set_coefficient(temp);
+		}
+
+		else if (input[i] == '^') 
+		{
+			if (input[i + 1] == '-')
+				new_term.set_exponent(-input[i + 2]+48);
+		}
+
+		else if (co_eff == false)
+		{
+			if (temp != 0)
+				temp = temp * 10 + input[i] - 48;
+			else
+				temp = input[i] - 48;
+			new_term.set_exponent(temp);
+		}
+		else
+			break;
+	}
+	polynomial.push_back(new_term);
+}
+
+
+
+list<Term>Clear_list(list<Term>& polynomial) //intended to clear first list upon user choice
+{
+	if (polynomial.size() == 0)
+		return polynomial;
+	while(polynomial.size()>0)
+		polynomial.pop_back();
+	return polynomial;
+}
+
+int main()
+{
+	bool done = false;
+	string input;
+	list<Term> polynomial;
+	list<Term> new_polynomial;
+	while (!done)
+	{
+		string choice = Get_Choice();
+		if (choice == "1")
+		{
+			Clear_list(polynomial);
+			input = Get_Input();
+
+			Convert_Input(input, polynomial);
+
+
+		}
+
+
+		else if (choice == "2"&&polynomial.size() > 0) {
+			input = Get_Input();
+
+			Convert_Input(input, new_polynomial);
+			Order_Poly(new_polynomial);
+			list<Term>::iterator new_itr = new_polynomial.begin();
+			list<Term>::iterator original_itr = polynomial.begin();
+			
+			for (original_itr; original_itr != polynomial.end(); original_itr++)
+			{
+				for (new_itr; new_itr != new_polynomial.end(); new_itr++)
+				{
+					if (*original_itr == *new_itr)
+					{
+						*new_itr = *original_itr + *new_itr;
+					}
+					else
+					{
+						new_polynomial.insert(new_itr, *original_itr);
+
+					}
+				}
+			}
+				
+
+			Clear_list(polynomial);
+			new_itr = new_polynomial.begin();
+			for (new_itr; new_itr != new_polynomial.end(); new_itr++)
+				polynomial.push_back(*new_itr);
+			Clear_list(new_polynomial);
+		}
+
+
+		if (choice == "3")
+		{
+			if (polynomial.size() != 0)
+				Display_polynomial(polynomial);
+			else
+				cout << "There is no polynomial to display." << endl;
+		}
+		else if (choice == "4")
+		{
+			done = true;
+			break;
+		}
+		
+		Order_Poly(polynomial);
+		
+		Display_polynomial(polynomial);
+	}
+}
