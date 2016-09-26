@@ -3,65 +3,56 @@ using namespace std;
 #include <string>;
 #include "Menu.h";
 #include "Term.h";
-#include "list.h";
+#include "list.h";  //list from class
 
 
 
-list<Term>Order_Poly(list<Term>& polynomial) //orders the polynomial from greatest to smallest exponent
+list<Term>Order_Poly(list<Term>& polynomial) //orders the polynomial from greatest to smallest exponent and combines like terms
 {
-	if (polynomial.size() == 0||polynomial.size()==1)
+	if (polynomial.size() == 0 || polynomial.size() == 1)
 		return polynomial;
-	int swap_count = 1;
-	int *swap;
-	swap=&swap_count;
-	while (swap_count > 0)
+
+	list<Term>::iterator itr = polynomial.begin();
+
+	list<Term>::iterator next_itr = polynomial.begin();
+	next_itr++;
+	Term temp;
+	for (itr; itr != polynomial.end(); itr++)
 	{
-		swap_count = 0;
-		list<Term>::iterator itr = polynomial.begin();
-
-		list<Term>::iterator next_itr = polynomial.begin();
-
-		Term temp;
-		for (itr; itr != polynomial.end(); itr++)
+		next_itr = polynomial.begin();
+		next_itr++;
+		for (next_itr; next_itr != polynomial.end(); next_itr++)
 		{
-			next_itr = polynomial.begin();
-			next_itr++;
-			for (next_itr; next_itr != polynomial.end(); next_itr++)
+			if (polynomial.size() > 1)
 			{
-				if (polynomial.size() > 1)
+				if (*itr == *next_itr)
 				{
-					if (*itr == *next_itr)
-					{
-						*itr = *itr + *next_itr;
+					*itr = *itr + *next_itr;
 
-						polynomial.erase(next_itr);
-						next_itr = itr;
-					}
-
-					else if (*itr < *next_itr)
-					{
-						temp = *itr;
-						*itr = *next_itr;
-						*next_itr = temp;
-						swap++;
-					}
-
+					polynomial.erase(next_itr);
+					next_itr = itr;
 				}
-				else if (polynomial.size() <= 1)
-					break;
+
+				else if (*itr < *next_itr)
+				{
+					temp = *itr;
+					*itr = *next_itr;
+					*next_itr = temp;
+				}
+
 			}
-			if (itr == polynomial.end() || next_itr == polynomial.end())
-			{
-				itr = (polynomial.begin());
+			else if (polynomial.size() <= 1)
 				break;
-			}
 		}
+		if (itr == polynomial.end() || next_itr == polynomial.end())
+			break;
 	}
+
 	return polynomial;
 }
 
 
-void Convert_Input(string input, list<Term>& polynomial)
+void Convert_Input(string input, list<Term>& polynomial) //takes string input and converts to list of Term outputs
 {
 	int temp = 1;
 	bool co_eff = true;
@@ -115,10 +106,10 @@ void Convert_Input(string input, list<Term>& polynomial)
 			new_term.set_coefficient(temp);
 		}
 
-		else if (input[i] == '^') 
+		else if (input[i] == '^')
 		{
 			if (input[i + 1] == '-')
-				new_term.set_exponent(-input[i + 2]+48);
+				new_term.set_exponent(-input[i + 2] + 48);
 		}
 
 		else if (co_eff == false)
@@ -141,7 +132,7 @@ list<Term>Clear_list(list<Term>& polynomial) //intended to clear first list upon
 {
 	if (polynomial.size() == 0)
 		return polynomial;
-	while(polynomial.size()>0)
+	while (polynomial.size()>0)
 		polynomial.pop_back();
 	return polynomial;
 }
@@ -170,12 +161,12 @@ int main()
 
 			Convert_Input(input, new_polynomial);
 			list<Term>::iterator itr = new_polynomial.begin();
-			
+
 			for (itr; itr != new_polynomial.end(); itr++)
 			{
 				polynomial.push_back(*itr);
 			}
-				
+
 			Clear_list(new_polynomial);
 		}
 
@@ -192,9 +183,12 @@ int main()
 			done = true;
 			break;
 		}
-		
-		Order_Poly(polynomial);
-		
+		int count = 0;
+		while (count < polynomial.size() - 1)
+		{
+			Order_Poly(polynomial);
+			count++;
+		}
 		Display_polynomial(polynomial);
 	}
 }
