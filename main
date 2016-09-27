@@ -7,54 +7,36 @@ using namespace std;
 
 
 
-list<Term>Order_Poly(list<Term>& polynomial) //orders the polynomial from greatest to smallest exponent and combines like terms
+void insert_Term(list<Term>& polynomial, Term *term)
 {
-	if (polynomial.size() == 0 || polynomial.size() == 1)
-		return polynomial;
-
 	list<Term>::iterator itr = polynomial.begin();
-
-	list<Term>::iterator next_itr = polynomial.begin();
-	next_itr++;
-	Term temp;
-	for (itr; itr != polynomial.end(); itr++)
+	bool addedToList = false;
+	for (itr; itr != polynomial.end(); *itr++)
 	{
-		next_itr = polynomial.begin();
-		next_itr++;
-		for (next_itr; next_itr != polynomial.end(); next_itr++)
+		if (*itr == *term)
 		{
-			if (polynomial.size() > 1)
-			{
-				if (*itr == *next_itr)
-				{
-					*itr = *itr + *next_itr;
-
-					polynomial.erase(next_itr);
-					next_itr = itr;
-				}
-
-				else if (*itr < *next_itr)
-				{
-					temp = *itr;
-					*itr = *next_itr;
-					*next_itr = temp;
-				}
-
-			}
-			else if (polynomial.size() <= 1)
-				break;
-		}
-		if (itr == polynomial.end() || next_itr == polynomial.end())
+			*itr = *itr + *term;
+			addedToList = true;
 			break;
+		}
+		else if (*itr < *term)
+		{
+			polynomial.insert(itr, *term);
+			addedToList = true;
+			break;
+		}
 	}
-
-	return polynomial;
+	if (!addedToList)
+	{
+		polynomial.push_back(*term);
+	}
 }
-
 
 void Convert_Input(string input, list<Term>& polynomial) //takes string input and converts to list of Term outputs
 {
-	int temp = 1;
+	int tempCoeffient = 1;
+	int tempExponent = 0;
+	bool firstCoeffientDigit = true;
 	bool co_eff = true;
 	bool has_x = false;
 	Term new_term;
@@ -73,23 +55,31 @@ void Convert_Input(string input, list<Term>& polynomial) //takes string input an
 				is_negative = false;
 			}
 			if (input[i] == '-')
+			{
+				tempCoeffient = -1;
 				is_negative = true;
+			}
+			else
+			{
+				tempCoeffient = 1;
+			}
+
 			int term_test = new_term.get_coefficient();
 			if (term_test != 0)
 			{
-				polynomial.push_back(new_term);
+				insert_Term(polynomial, &new_term);
 			}
-			temp = 1;
+			firstCoeffientDigit = true;
+			tempExponent = 0;
 			co_eff = true;
 			has_x = false;
-			new_term.set_coefficient(1);
+			new_term.set_coefficient(tempCoeffient);
 			new_term.set_exponent(0);
-
 		}
 
 		else if (input[i] == 'x' || input[i] == 'X')
 		{
-			temp = 0;
+			tempExponent = 0;
 			co_eff = false;
 			has_x = true;
 			new_term.set_exponent(1);
@@ -99,32 +89,43 @@ void Convert_Input(string input, list<Term>& polynomial) //takes string input an
 
 		else if (co_eff == true)
 		{
-			if (temp != 1)
-				temp = temp * 10 + input[i] - 48;
+			if (firstCoeffientDigit) // is this the first digit of the coeffidient
+			{
+				tempCoeffient = (input[i] - 48); // - 48 or -"0" convert the ASCII to binary
+				if (is_negative)
+					tempCoeffient = tempCoeffient*-1;
+				firstCoeffientDigit = false;
+			}
 			else
-				temp = input[i] - 48;
-			new_term.set_coefficient(temp);
+			{
+				tempCoeffient = tempCoeffient * 10 + input[i] - 48;
+			}
+			new_term.set_coefficient(tempCoeffient);
 		}
 
 		else if (input[i] == '^')
 		{
-			if (input[i + 1] == '-')
-				new_term.set_exponent(-input[i + 2] + 48);
+			if (i < input.size() - 3) // otherwise the following will cause an out of bounds exception.
+			{
+				if (input[i + 1] == '-')
+					new_term.set_exponent(-input[i + 2] + 48);
+			}
 		}
 
 		else if (co_eff == false)
 		{
-			if (temp != 0)
-				temp = temp * 10 + input[i] - 48;
+			if (tempExponent != 0)
+				tempExponent = tempExponent * 10 + input[i] - 48;
 			else
-				temp = input[i] - 48;
-			new_term.set_exponent(temp);
+				tempExponent = input[i] - 48;
+			new_term.set_exponent(tempExponent);
 		}
 		else
 			break;
 	}
-	polynomial.push_back(new_term);
+	insert_Term(polynomial, &new_term);
 }
+
 
 
 
@@ -140,55 +141,36 @@ list<Term>Clear_list(list<Term>& polynomial) //intended to clear first list upon
 int main()
 {
 	bool done = false;
-	string input;
+	string firstPolynomial = "";
+	string secondPolynomial = "";
 	list<Term> polynomial;
-	list<Term> new_polynomial;
 	while (!done)
 	{
-		string choice = Get_Choice();
+		string choice = Get_Choice(firstPolynomial, secondPolynomial);
 		if (choice == "1")
 		{
 			Clear_list(polynomial);
-			input = Get_Input();
-
-			Convert_Input(input, polynomial);
-
+			firstPolynomial = Get_Input();
 		}
-
-
-		else if (choice == "2"&&polynomial.size() > 0) {
-			input = Get_Input();
-
-			Convert_Input(input, new_polynomial);
-			list<Term>::iterator itr = new_polynomial.begin();
-
-			for (itr; itr != new_polynomial.end(); itr++)
-			{
-				polynomial.push_back(*itr);
-			}
-
-			Clear_list(new_polynomial);
+		else if (choice == "2") {
+			secondPolynomial = Get_Input();
 		}
-
-
-		if (choice == "3")
-		{
-			if (polynomial.size() != 0)
-				Display_polynomial(polynomial);
-			else
-				cout << "There is no polynomial to display." << endl;
+		else if (choice == "3") {
+			Convert_Input(firstPolynomial, polynomial);
+			Convert_Input(secondPolynomial, polynomial);
+			Display_polynomial(polynomial, firstPolynomial, secondPolynomial);
+			Clear_list(polynomial);
 		}
-		else if (choice == "4")
+		else if (choice == "4") {
+			Convert_Input(firstPolynomial, polynomial);
+			Convert_Input(secondPolynomial, polynomial);
+			firstPolynomial = Display_polynomial(polynomial, firstPolynomial, secondPolynomial);
+			Clear_list(polynomial);
+		}
+		else if (choice == "0")
 		{
 			done = true;
 			break;
 		}
-		int count = 0;
-		while (count < polynomial.size() - 1)
-		{
-			Order_Poly(polynomial);
-			count++;
-		}
-		Display_polynomial(polynomial);
 	}
 }
