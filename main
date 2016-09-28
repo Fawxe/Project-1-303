@@ -1,32 +1,32 @@
 using namespace std;
 #include <iostream>;
 #include <string>;
-#include "Menu.h";
-#include "Term.h";
+#include "Menu.h"; // user interface class
+#include "Term.h"; // container class for polynomial
 #include "list.h";  //list from class
 
 
 
-void insert_Term(list<Term>& polynomial, Term *term)
+void insert_Term(list<Term>& polynomial, Term *term) //inserts term in the proper location
 {
-	list<Term>::iterator itr = polynomial.begin();
-	bool addedToList = false;
-	for (itr; itr != polynomial.end(); *itr++)
+	list<Term>::iterator itr = polynomial.begin(); //create iterator at start of list
+	bool addedToList = false;  
+	for (itr; itr != polynomial.end(); *itr++)  //iterate through list
 	{
-		if (*itr == *term)
+		if (*itr == *term) //if there is a like term, add the two and quit
 		{
 			*itr = *itr + *term;
-			addedToList = true;
+			addedToList = true;  //shows completion
 			break;
 		}
-		else if (*itr < *term)
+		else if (*itr < *term) //if there is a smaller term, add in front of it.
 		{
 			polynomial.insert(itr, *term);
 			addedToList = true;
 			break;
 		}
 	}
-	if (!addedToList)
+	if (!addedToList) //if there is no smaller term, add it on to the end
 	{
 		polynomial.push_back(*term);
 	}
@@ -34,27 +34,23 @@ void insert_Term(list<Term>& polynomial, Term *term)
 
 void Convert_Input(string input, list<Term>& polynomial) //takes string input and converts to list of Term outputs
 {
-	int tempCoeffient = 1;
+	int tempCoeffient = 1; 
 	int tempExponent = 0;
 	bool firstCoeffientDigit = true;
 	bool co_eff = true;
 	bool has_x = false;
 	Term new_term;
 	bool is_negative = false;
-	for (int i = 0; i <= input.size() - 1; i++)
+	for (int i = 0; i <= input.size() - 1; i++) //iterate through the whole string
 	{
 
-		if (input[i] == '+' || input[i] == '-')
+		if (input[i] == '+' || input[i] == '-') //indicates breaking point in term creation
 		{
-
-			if (is_negative)
+			if (input[i] == '+')
 			{
-				int sign_change = new_term.get_coefficient();
-				sign_change = sign_change*-1;
-				new_term.set_coefficient(sign_change);
 				is_negative = false;
 			}
-			if (input[i] == '-')
+			if (input[i] == '-')   
 			{
 				tempCoeffient = -1;
 				is_negative = true;
@@ -65,11 +61,11 @@ void Convert_Input(string input, list<Term>& polynomial) //takes string input an
 			}
 
 			int term_test = new_term.get_coefficient();
-			if (term_test != 0)
+			if (term_test != 0)                                  //if current term isn't a 0 term, add to list.
 			{
 				insert_Term(polynomial, &new_term);
 			}
-			firstCoeffientDigit = true;
+			firstCoeffientDigit = true;  //reset variables
 			tempExponent = 0;
 			co_eff = true;
 			has_x = false;
@@ -77,45 +73,68 @@ void Convert_Input(string input, list<Term>& polynomial) //takes string input an
 			new_term.set_exponent(0);
 		}
 
-		else if (input[i] == 'x' || input[i] == 'X')
+		else if (input[i] == 'x' || input[i] == 'X')  //marks transition from coefficient to exponent
 		{
 			tempExponent = 0;
 			co_eff = false;
 			has_x = true;
 			new_term.set_exponent(1);
-			if (new_term.get_coefficient() == 0)
+			if (new_term.get_coefficient() == 0)  //if there were no numbers before this x, then a 1 is assumed
 				new_term.set_coefficient(1);
 		}
 
-		else if (co_eff == true)
+		else if (co_eff == true)  //if we're in the coefficient stage
 		{
 			if (firstCoeffientDigit) // is this the first digit of the coeffidient
 			{
-				tempCoeffient = (input[i] - 48); // - 48 or -"0" convert the ASCII to binary
-				if (is_negative)
-					tempCoeffient = tempCoeffient*-1;
+				tempCoeffient = (input[i] - 48); // - 48 or -"0" convert the ASCII to normal
 				firstCoeffientDigit = false;
+				if (is_negative) // if there was a negative sign, account for that here
+				{
+					tempCoeffient = tempCoeffient*-1;
+					
+				}
 			}
 			else
 			{
-				tempCoeffient = tempCoeffient * 10 + input[i] - 48;
+				if (tempCoeffient > 0) {
+					tempCoeffient = tempCoeffient * 10 + input[i] - 48; //move the digit over and add in the new digit
+				}
+				else if (tempCoeffient < 0)
+				{
+					tempCoeffient = tempCoeffient * 10 - (input[i] - 48);   //subraction must be used if it is negative
+				}
 			}
 			new_term.set_coefficient(tempCoeffient);
 		}
 
-		else if (input[i] == '^')
+		else if (input[i] == '^')  
 		{
-			if (i < input.size() - 3) // otherwise the following will cause an out of bounds exception.
+			if (i < input.size() - 2) // otherwise the following will cause an out of bounds exception.
 			{
-				if (input[i + 1] == '-')
-					new_term.set_exponent(-input[i + 2] + 48);
+				if (input[i + 1] == '-')  //checks for a negative exponent and sets it accordingly
+				{
+					new_term.set_exponent(-(input[i + 2] - 48));
+					tempExponent = new_term.get_exponent();
+					i++;  //in case of negative exponent, have to iterate past the sign
+				}
 			}
 		}
 
-		else if (co_eff == false)
+		else if (co_eff == false)  //exponent stage
 		{
-			if (tempExponent != 0)
+			if (tempExponent < 0)  // if it is negative, check for end of exponent via sign or end of string. or do the math
+			{
+				if (i == input.size() - 1 || input[i + 1] == '-' || input[i + 1] == '+')
+					new_term.set_exponent(tempExponent);
+				else
+					tempExponent = tempExponent * 10 - (input[i] - 48);
+			}
+			else if (tempExponent > 0)  //same calculations as coefficients
+			{
 				tempExponent = tempExponent * 10 + input[i] - 48;
+			}
+
 			else
 				tempExponent = input[i] - 48;
 			new_term.set_exponent(tempExponent);
@@ -123,8 +142,9 @@ void Convert_Input(string input, list<Term>& polynomial) //takes string input an
 		else
 			break;
 	}
-	insert_Term(polynomial, &new_term);
+	insert_Term(polynomial, &new_term);  //place last term in list
 }
+
 
 
 
@@ -140,7 +160,7 @@ list<Term>Clear_list(list<Term>& polynomial) //intended to clear first list upon
 
 int main()
 {
-	bool done = false;
+	bool done = false;        //completion condition
 	string firstPolynomial = "";
 	string secondPolynomial = "";
 	list<Term> polynomial;
@@ -156,18 +176,17 @@ int main()
 			secondPolynomial = Get_Input();
 		}
 		else if (choice == "3") {
-			Convert_Input(firstPolynomial, polynomial);
-			Convert_Input(secondPolynomial, polynomial);
-			Display_polynomial(polynomial, firstPolynomial, secondPolynomial);
-			Clear_list(polynomial);
+			Convert_Input(firstPolynomial, polynomial);  //get data for 1st polynomial
+			Convert_Input(secondPolynomial, polynomial); //get data for second and add to first
+			Clear_list(polynomial);  //clear list for next use
 		}
 		else if (choice == "4") {
-			Convert_Input(firstPolynomial, polynomial);
+			Convert_Input(firstPolynomial, polynomial); 
 			Convert_Input(secondPolynomial, polynomial);
-			firstPolynomial = Display_polynomial(polynomial, firstPolynomial, secondPolynomial);
+			firstPolynomial = Display_polynomial(polynomial, firstPolynomial, secondPolynomial);  //take the output string and make it the new first
 			Clear_list(polynomial);
 		}
-		else if (choice == "0")
+		else if (choice == "0")  //completion condition
 		{
 			done = true;
 			break;
